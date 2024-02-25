@@ -25,13 +25,18 @@ jobs:
       - uses: actions/checkout@v3
 
       # run single line
-      - name: single line cmd
-        run: ssh -o StrictHostKeyChecking=no -T -i "${{ secrets.SSH_KEY }}" "${{ secrets.USER_ON_HOST }}"
+      #- name: single line cmd
+       #run: ssh -o StrictHostKeyChecking=no -T -i "${{ secrets.SSH_KEY }}" "${{ secrets.USER_ON_HOST }}"
 
       # Runs a set of commands using the runners shell
-      #- name: Run a multi-line script
-        #run: |
-         # ssh -o StrictHostKeyChecking=no -T -i "${{ secrets.SSH_KEY }}" "${{ secrets.USER_ON_HOST }}"
+      - name: Run a multi-line script
+        run: |
+          # Set up SSH key
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}"
           # 'sh -c "
           # echo "deez" >> logs_private/deployment
           # echo "nutz" >> logs_private/deployment"'
