@@ -34,7 +34,7 @@ jobs:
       # copies checkout repo to remote server
       - name: scp
         run: |
-          scp -i ~/.ssh/id_rsa * "${{ secrets.USER_ON_HOST }}":~/deploytest
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${{ secrets.USER_ON_HOST }}":~/deploytest
 
   log:
     runs-on: ubuntu-latest
