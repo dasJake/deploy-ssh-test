@@ -38,9 +38,10 @@ jobs:
       - name: scp
         run: |
           scp -i ~/.ssh/id_rsa * "${{ secrets.USER_ON_HOST }}":~/deploytest
-  
+
   log:
     runs-on: ubuntu-latest
+    steps:
       - name: log
         run: |
           ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
