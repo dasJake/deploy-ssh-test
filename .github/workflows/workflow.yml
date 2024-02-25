@@ -50,5 +50,5 @@ jobs:
       - name: log
         run: |
           ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
-          echo "$(date +'%Y-%m-%d_%T') deployment executed" >> logs_private/deployment
+          echo "$(date +'%Y-%m-%d_%T') deployment executed" >> ~/logs_private/deployment
           "'
