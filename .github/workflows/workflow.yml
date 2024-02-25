@@ -24,10 +24,14 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
+      # run single line
+      - name: single line cmd
+        run: ssh -o StrictHostKeyChecking=no -T -i "${{ secrets.SSH_KEY }}" "${{ secrets.USER_ON_HOST }}"
+
       # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          ssh -o StrictHostKeyChecking=no -i "${{ secrets.SSH_KEY }}" "${{ secrets.USER_ON_HOST }}"
+      #- name: Run a multi-line script
+        #run: |
+         # ssh -o StrictHostKeyChecking=no -T -i "${{ secrets.SSH_KEY }}" "${{ secrets.USER_ON_HOST }}"
           # 'sh -c "
           # echo "deez" >> logs_private/deployment
           # echo "nutz" >> logs_private/deployment"'
