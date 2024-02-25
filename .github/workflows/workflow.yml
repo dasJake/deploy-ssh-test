@@ -46,8 +46,5 @@ jobs:
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
-      - name: log
-        run: |
           ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
           echo "deployment executed" >> ~/logs_private/deployment"'
