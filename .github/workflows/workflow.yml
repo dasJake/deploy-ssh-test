@@ -33,5 +33,4 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           
           ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
-          echo "deez" >> logs_private/deployment
-          echo "nutz" >> logs_private/deployment"'
+          echo "$(date +'%Y-%m-%d_%T') deployment executed" >> logs_private/deployment
