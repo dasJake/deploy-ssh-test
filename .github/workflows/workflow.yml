@@ -51,7 +51,7 @@ jobs:
       - name: scp
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${{ secrets.USER_ON_HOST
-          }}":~/deploytest/${{ github.event.inputs.environments }}
+          }}":~/deploytest/${{ github.event.inputs.environment }}
 
   log:
     runs-on: ubuntu-latest
