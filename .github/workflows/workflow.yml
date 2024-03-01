@@ -44,7 +44,8 @@ jobs:
       - name: mkdir
         run: |
           ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
-          mkdir -p \"~/deploytest/${{ github.event.inputs.environment }}\""
+          mkdir -p \"~/deploytest/${{ github.event.inputs.environment }}\"
+          "'
 
       # copies checkout repo to remote server
       - name: scp
