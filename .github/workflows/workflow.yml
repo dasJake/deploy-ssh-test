@@ -43,7 +43,7 @@ jobs:
       # copies checkout repo to remote server
       - name: scp
         run: |
-          mdkir -p "~/deploytest/${{ github.event.inputs.environment }}"
+          mkdir -p "~/deploytest/${{ github.event.inputs.environment }}"
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${{ secrets.USER_ON_HOST
           }}":~/deploytest/${{ github.event.inputs.environments }}
 
