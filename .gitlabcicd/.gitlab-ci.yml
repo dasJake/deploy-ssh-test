@@ -30,9 +30,9 @@ export ssh key:       # This job runs in the build stage, which runs first.
     - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - |
-    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
-          mkdir -p "~/deploytest/glcicd
-          "'
+      ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
+      mkdir -p ~/deploytest/glcicd
+      "'
     - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/glcicd
 
 create environment directory:   # This job runs in the test stage.
