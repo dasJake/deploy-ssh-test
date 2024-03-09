@@ -29,7 +29,11 @@ export ssh key:       # This job runs in the build stage, which runs first.
     - mkdir -p ~/.ssh
     - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/${CI_COMMIT_REF_NAME}
+    - |
+    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
+          mkdir -p "~/deploytest/glcicd
+          "'
+    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/glcicd
 
 create environment directory:   # This job runs in the test stage.
   stage: prepare remote    # It only starts when the job in the build stage completes successfully.
