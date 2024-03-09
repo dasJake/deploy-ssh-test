@@ -27,8 +27,8 @@ export ssh key:       # This job runs in the build stage, which runs first.
   when: manual
   script:
     - mkdir -p ~/.ssh
-    - echo "Compile complete." > ~/.ssh/id_rsa
-    - cat ~/.ssh/id_rsa
+    - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
+    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST":~/deploytest/${CI_COMMIT_REF_NAME}
 
 create environment directory:   # This job runs in the test stage.
   stage: prepare remote    # It only starts when the job in the build stage completes successfully.
