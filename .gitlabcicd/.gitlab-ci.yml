@@ -22,7 +22,7 @@ stages:          # List of stages for jobs, and their order of execution
 
 before_script:
   - mkdir -p ~/.ssh
-  - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
+  - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa # must decode base64 as key is stored as base64 in gitlab var
   - chmod 600 ~/.ssh/id_rsa
 
 create environment directory:
@@ -41,7 +41,7 @@ log deployment start:
     - job: create environment directory
   script:
     |
-    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
+    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
     echo \"$(date +'%Y-%m-%d_%T') deployment started\" >> ~/logs_private/deployment"'
 
 copy app to remote:
