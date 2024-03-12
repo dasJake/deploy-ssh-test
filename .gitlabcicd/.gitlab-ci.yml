@@ -20,6 +20,10 @@ stages:          # List of stages for jobs, and their order of execution
   - deploy
   - run
 
+before_script:
+  - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
+  - chmod 600 ~/.ssh/id_rsa
+
 create environment directory:
   stage: deploy
   when: manual
@@ -34,7 +38,7 @@ create environment directory:
 
 log deployment start:
   stage: deploy
-  when: always
+  when: on_success
   needs:
     - job: create environment directory
   script:
