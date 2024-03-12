@@ -17,13 +17,11 @@
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
 stages:          # List of stages for jobs, and their order of execution
-  - prepare runner
-  - prepare remote
   - deploy
   - run
 
-export ssh key:       # This job runs in the build stage, which runs first.
-  stage: prepare runner
+create environment directory:
+  stage: deploy
   when: manual
   script:
     - mkdir -p ~/.ssh
@@ -33,34 +31,26 @@ export ssh key:       # This job runs in the build stage, which runs first.
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
       mkdir -p ~/deploytest/glcicd
       "'
-    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/glcicd
 
-create environment directory:   # This job runs in the test stage.
-  stage: prepare remote    # It only starts when the job in the build stage completes successfully.
-  when: manual
+log deployment start:
+  stage: deploy
+  when: always
   script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - sleep 60
-    - echo "Code coverage is 90%"
+    |
+    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
+    echo \"$(date +'%Y-%m-%d_%T') deployment started\" >> ~/logs_private/deployment"'
 
-lint-test-job:   # This job also runs in the test stage.
-  stage: prepare remote    # It can run at the same time as unit-test-job (in parallel).
-  when: manual
-  script:
-    - echo "Linting code... This will take about 10 seconds."
-    - sleep 10
-    - echo "No lint issues found."
-
-copy app to remote:      # This job runs in the deploy stage.
-  stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+copy app to remote:
+  stage: deploy
   environment: production
-  when: manual
   script:
-    - echo "Deploying application..."
-    - echo "Application successfully deployed."
+    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/glcicd
+  when: on_success
+  dependencies:
+    - create environment directory
 
 run app:
-  stage: run
+  stage: deploy
   when: manual
   script:
     - echo "run"
