@@ -27,7 +27,6 @@ before_script:
 
 create environment directory:
   stage: deploy
-  when: manual
   script:
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
@@ -47,11 +46,21 @@ log deployment start:
 copy app to remote:
   stage: deploy
   environment: production
-  script:
-    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/glcicd
   when: on_success
   needs:
     - job: create environment directory
+  script:
+    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/glcicd
+
+log deployment successful:
+  stage: deploy
+  when: on_success
+  needs:
+    - job: copy app to remote
+  script:
+    |
+    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
+    echo \"$(date +'%Y-%m-%d_%T') deployment successful\n===\" >> ~/logs_private/deployment"'
 
 run app:
   stage: deploy
