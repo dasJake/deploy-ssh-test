@@ -60,7 +60,8 @@ log deployment successful:
   script:
     |
     ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
-    echo \"$(date +'%Y-%m-%d_%T') deployment successful\n===\" >> ~/logs_private/deployment"'
+    echo \"$(date +'%Y-%m-%d_%T') deployment successful\" >> ~/logs_private/deployment
+    echo \"===\" >> ~/logs_private/deployment"'
 
 run app:
   stage: deploy
