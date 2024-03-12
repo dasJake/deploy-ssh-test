@@ -21,6 +21,7 @@ stages:          # List of stages for jobs, and their order of execution
   - run
 
 before_script:
+  - mkdir -p ~/.ssh
   - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
   - chmod 600 ~/.ssh/id_rsa
 
@@ -28,9 +29,6 @@ create environment directory:
   stage: deploy
   when: manual
   script:
-    - mkdir -p ~/.ssh
-    - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
       mkdir -p ~/deploytest/glcicd
