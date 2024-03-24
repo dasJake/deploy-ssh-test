@@ -43,6 +43,17 @@ log deployment start:
     ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
     echo \"$(date +'%Y-%m-%d_%T') deployment started\" >> ~/logs_private/deployment"'
 
+transfer env vars to remote:
+  stage: deploy
+  when: on_success
+  needs:
+    - job: create environment directory
+  script:
+    |
+    echo " export ${PORT}" >> ~/env
+    scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/deploytest/glcicd/env/env.var
+
+
 copy app to remote:
   stage: deploy
   environment: production
