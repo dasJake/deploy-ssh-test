@@ -50,7 +50,7 @@ transfer env vars to remote:
     - job: create environment directory
   script:
     |
-    echo " export ${PORT}" >> ~/env
+    echo "export PORT=${PORT}" >> ~/env
     scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/deploytest/glcicd/env.var
 
 
