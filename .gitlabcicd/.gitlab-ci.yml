@@ -51,7 +51,7 @@ transfer env vars to remote:
   script:
     |
     echo " export ${PORT}" >> ~/env
-    scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/deploytest/glcicd/env/env.var
+    scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/deploytest/glcicd/env.var
 
 
 copy app to remote:
