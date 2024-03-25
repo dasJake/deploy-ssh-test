@@ -20,7 +20,11 @@ stages:          # List of stages for jobs, and their order of execution
   - deploy
   - run
 
+variables:
+  DESTINATION_PATH: $CI_PROJECT_NAME/glcicd/$CI_ENVIRONMENT_NAME
+
 before_script:
+  - echo "path $DESTINATION_PATH"
   - mkdir -p ~/.ssh
   - echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa # must decode base64 as key is stored as base64 in gitlab var
   - chmod 600 ~/.ssh/id_rsa
@@ -28,10 +32,11 @@ before_script:
 create environment directory:
   stage: deploy
   script:
+    - echo "cre env"
     - |
-      ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
-      mkdir -p ~/deploytest/glcicd
-      "'
+      ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
+      mkdir -p ~/\"$DESTINATION_PATH\"
+      '"
 
 log deployment start:
   stage: deploy
@@ -39,9 +44,10 @@ log deployment start:
   needs:
     - job: create environment directory
   script:
-    |
-    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
-    echo \"$(date +'%Y-%m-%d_%T') deployment started\" >> ~/logs_private/deployment"'
+    - echo "log start"
+    - |
+      ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
+      echo \"$(date +'%Y-%m-%d_%T') deployment started\" >> ~/logs_private/deployment"'
 
 transfer env vars to remote:
   stage: deploy
@@ -49,19 +55,19 @@ transfer env vars to remote:
   needs:
     - job: create environment directory
   script:
-    |
-    echo "export PORT=${PORT}" >> ~/env
-    scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/deploytest/glcicd/env.var
+    - echo "trans env"
+    -  |
+      echo "export PORT=${PORT}" >> ~/env
+      scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/"$DESTINATION_PATH/env.var"
 
 
 copy app to remote:
   stage: deploy
-  environment: production
   when: on_success
   needs:
     - job: create environment directory
   script:
-    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/deploytest/glcicd
+    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/"$DESTINATION_PATH"
 
 log deployment successful:
   stage: deploy
