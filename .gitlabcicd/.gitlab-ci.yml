@@ -21,7 +21,9 @@ stages:          # List of stages for jobs, and their order of execution
   - run
 
 variables:
-  DESTINATION_PATH: $CI_PROJECT_NAME/glcicd/$CI_ENVIRONMENT_NAME
+  DESTINATION_PATH: $CI_PROJECT_NAME/glcicd/$ENVIRONMENT
+  # can be changed upon pipeline creation
+  ENVIRONMENT: "benchmark"
 
 before_script:
   - echo "path $DESTINATION_PATH"
@@ -31,6 +33,8 @@ before_script:
 
 create environment directory:
   stage: deploy
+  environment:
+    name: $ENVIRONMENT 
   script:
     - echo "cre env"
     - |
@@ -40,24 +44,27 @@ create environment directory:
 
 log deployment start:
   stage: deploy
+  environment:
+    name: $ENVIRONMENT
   when: on_success
   needs:
     - job: create environment directory
   script:
-    - echo "log start"
     - |
-      ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
-      echo \"$(date +'%Y-%m-%d_%T') deployment started\" >> ~/logs_private/deployment"'
+      ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
+      echo \"$(date +'%Y-%m-%d_%T') deployment started on $CI_ENVIRONMENT_NAME\" >> ~/logs_private/deployment'"
 
 transfer env vars to remote:
-  stage: deploy
+  stage: deploy  
+  environment:
+    name: $ENVIRONMENT
   when: on_success
   needs:
     - job: create environment directory
   script:
     - echo "trans env"
     -  |
-      echo "export PORT=${PORT}" >> ~/env
+      echo "export PORT=$(echo $PORT | base64 --decode)" >> ~/env
       scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/"$DESTINATION_PATH/env.var"
 
 
@@ -71,17 +78,19 @@ copy app to remote:
 
 log deployment successful:
   stage: deploy
+  environment:
+    name: $ENVIRONMENT
   when: on_success
   needs:
     - job: copy app to remote
   script:
     |
-    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" 'sh -c "
-    echo \"$(date +'%Y-%m-%d_%T') deployment successful\" >> ~/logs_private/deployment
-    echo \"===\" >> ~/logs_private/deployment"'
+    ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
+    echo \"$(date +'%Y-%m-%d_%T') deployment successful on $CI_ENVIRONMENT_NAME\" >> ~/logs_private/deployment
+    echo \"===\" >> ~/logs_private/deployment'"
 
 run app:
   stage: deploy
   when: manual
   script:
-    - echo "run"
+    - echo "path $DESTINATION_PATH"
