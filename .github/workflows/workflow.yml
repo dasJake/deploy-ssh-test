@@ -26,6 +26,7 @@ jobs:
   deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -44,14 +45,20 @@ jobs:
       - name: mkdir
         run: |
           ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${{ secrets.USER_ON_HOST }}" 'sh -c "
-          mkdir -p "~/deploytest/${{ github.event.inputs.environment }}"
+          mkdir -p "~/${{ github.event.repository.name }}/${{ github.event.inputs.environment }}/env"
           "'
 
       # copies checkout repo to remote server
       - name: scp
         run: |
           scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${{ secrets.USER_ON_HOST
-          }}":~/deploytest/${{ github.event.inputs.environment }}
+          }}":~/${{ github.event.repository.name }}/${{ github.event.inputs.environment }}
+
+      - name: transfer env-var
+        run: |
+          echo "${{ secrets.PORT }}" >> env.var
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa env.var "${{ secrets.USER_ON_HOST
+          }}":~/${{ github.event.repository.name }}/${{ github.event.inputs.environment }}/env/env.var
 
   log:
     runs-on: ubuntu-latest
