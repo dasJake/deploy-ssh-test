@@ -40,6 +40,7 @@ create environment directory:
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
       mkdir -p ~/\"$DESTINATION_PATH\"
+      mkdir -p ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT
       '"
 
 log deployment start:
@@ -52,7 +53,7 @@ log deployment start:
   script:
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
-      echo \"$(date +'%Y-%m-%d_%T') deployment started on $CI_ENVIRONMENT_NAME\" >> ~/logs_private/deployment'"
+      echo \"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH started.\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment'"
 
 transfer env vars to remote:
   stage: deploy  
@@ -66,6 +67,18 @@ transfer env vars to remote:
     -  |
       echo "export PORT=$(echo $PORT | base64 --decode)" >> ~/env
       scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/"$DESTINATION_PATH/env.var"
+
+log env transfer:
+  stage: deploy
+  environment:
+    name: $ENVIRONMENT
+  when: on_success
+  needs:
+    - job: transfer env vars to remote
+  script:
+    - |
+      ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
+      echo \"$(date +'%Y-%m-%d_%T'): Environment variables have been set.\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment'"
 
 
 copy app to remote:
@@ -86,8 +99,8 @@ log deployment successful:
   script:
     |
     ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
-    echo \"$(date +'%Y-%m-%d_%T') deployment successful on $CI_ENVIRONMENT_NAME\" >> ~/logs_private/deployment
-    echo \"===\" >> ~/logs_private/deployment'"
+    echo \"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH was successful.\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment
+    echo \"===\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment'"
 
 run app:
   stage: deploy
