@@ -21,9 +21,10 @@ stages:          # List of stages for jobs, and their order of execution
   - run
 
 variables:
-  DESTINATION_PATH: $CI_PROJECT_NAME/glcicd/$ENVIRONMENT
-  # can be changed upon pipeline creation
-  ENVIRONMENT: "benchmark"
+  DESTINATION_PATH: "$HOMEDIR/$CI_PROJECT_NAME/glcicd/$ENVIRONMENT"
+  LOG_PATH: "$HOMEDIR/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT"
+  ENVIRONMENT: "benchmark" # can be set as pipeline variable
+  HOMEDIR: "~" # default homedir works in most cases but sometimes it needs to be explicitely evaluated
 
 before_script:
   - echo "path $DESTINATION_PATH"
@@ -35,12 +36,15 @@ create environment directory:
   stage: deploy
   environment:
     name: $ENVIRONMENT 
+  variables:
+    PATHS: "$DESTINATION_PATH+++$LOG_PATH"
+    HOMEDIR: "$(eval echo \"~$USER\")" # ~ cannot be expanded in this command therefore we need to evaluate it
   script:
     - echo "cre env"
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
-      mkdir -p ~/\"$DESTINATION_PATH\"
-      mkdir -p ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT
+      for path in \$(echo \"$PATHS\" | tr \"+++\" \"\n\"); do
+        echo \"\$path\" && mkdir -p \$path; done
       '"
 
 log deployment start:
@@ -53,7 +57,7 @@ log deployment start:
   script:
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
-      echo \"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH started.\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment'"
+      echo \"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH started.\" >> $LOG_PATH/deployment'"
 
 transfer env vars to remote:
   stage: deploy  
@@ -66,7 +70,7 @@ transfer env vars to remote:
     - echo "trans env"
     -  |
       echo "export PORT=$(echo $PORT | base64 --decode)" >> ~/env
-      scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":~/"$DESTINATION_PATH/env.var"
+      scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ~/env "${USER_ON_HOST}":"$DESTINATION_PATH/env.var"
 
 log env transfer:
   stage: deploy
@@ -78,7 +82,7 @@ log env transfer:
   script:
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
-      echo \"$(date +'%Y-%m-%d_%T'): Environment variables have been set.\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment'"
+      echo \"$(date +'%Y-%m-%d_%T'): Environment variables have been set.\" >> $LOG_PATH/deployment'"
 
 
 copy app to remote:
@@ -87,7 +91,7 @@ copy app to remote:
   needs:
     - job: create environment directory
   script:
-    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":~/"$DESTINATION_PATH"
+    - scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa * "${USER_ON_HOST}":"$DESTINATION_PATH"
 
 log deployment successful:
   stage: deploy
@@ -99,8 +103,8 @@ log deployment successful:
   script:
     |
     ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
-    echo \"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH was successful.\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment
-    echo \"===\" >> ~/logs_private/$CI_PROJECT_NAME/$ENVIRONMENT/deployment'"
+    echo \"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH was successful.\" >> $LOG_PATH/deployment
+    echo \"===\" >> $LOG_PATH/deployment'"
 
 run app:
   stage: deploy
