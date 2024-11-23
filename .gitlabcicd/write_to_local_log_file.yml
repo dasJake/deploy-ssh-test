@@ -2,5 +2,7 @@
   script:
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
-      echo \"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH started.\" >> $LOG_PATH/deployment'"
+      echo \$LOGMESSAGE >> $LOG_PATH/deployment'"
+  variables:
+    LOGMESSAGE: '\"$(date +'%Y-%m-%d_%T'): Deployment to $DESTINATION_PATH started.\"'
 
