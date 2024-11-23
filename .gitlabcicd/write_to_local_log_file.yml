@@ -1,4 +1,4 @@
-write to local log file:
+.write to local log file:
   script:
     - |
       ssh -o StrictHostKeyChecking=no -T -i ~/.ssh/id_rsa "${USER_ON_HOST}" "sh -c '
